@@ -9,7 +9,8 @@ from instagram import Account, WebAgent
 
 TOKEN = "token"
 
-bot = telebot.TeleBot(TOKEN, True, 4)
+
+bot = telebot.TeleBot(TOKEN)
 
 
 @bot.message_handler(content_types=["text"])
@@ -36,21 +37,21 @@ def get_name(message):
             bot.register_next_step_handler(message, count(name))
             print(name)
 
-        except Exception:
+        except (Exception, ValueError):
             logging.error("error: {}".format(sys.exc_info()[0]))
             break
 
-        bot.register_next_step_handler(message, print_res())
 
-        max_len = max([len(x[0]) for x in Counter(counter).most_common(10)])
+        bot.register_next_step_handler(message, print_res())
+        print("sdfsdf")
         for element in Counter(counter).most_common(10):
             if element == ("0", 1):
                 bot.send_message(message.from_user.id, "Ошибка. Проверьте введенные данные!")
                 break
             else:
                 bot.send_message(message.from_user.id, (
-                    "https://www.instagram.com/{value0:{width0}}{value1}".format(value0=element[0], width0=max_len + 10,
-                                                                                 value1=element[1])))
+                    "https://www.instagram.com/{value0}          {value1}".format(value0=element[0], value1=element[1])))
+                
         bot.send_message(message.from_user.id, "С этим пользователем все выяснили, \n"
                                                "напиши /start для проверки следующего ")
         bot.clear_step_handler(message)
@@ -97,14 +98,21 @@ def count(name):
             logging.error("error: {}".format(sys.exc_info()[0]))
             counter = "0"
             break
+        except instagram.exceptions.UnexpectedResponse:
+            logging.error("error: {}".format(sys.exc_info()))
+            counter = "0"
+            break
+        except ValueError:
+            logging.error("error: {}".format(sys.exc_info()[0]))
+            counter = "0"
+            break
 
 
-def print_res():
+def print_res(): # отображает в консоли
     try:
-        print("Пользователь", " " * 8, "Лайки")
-        max_len = max([len(x[0]) for x in Counter(counter).most_common(10)])
+        print("Лайки", " " * 7, "Пользователь")
         for element in Counter(counter).most_common(10):
-            print("{value0:{width0}}{value1}".format(value0=element[0], width0=max_len + 5, value1=element[1]))
+            print("{value1}          {value0}".format(value0=element[0], value1=element[1]))
     except Exception:
         logging.error("error: {}".format(sys.exc_info()[0]))
         pass
